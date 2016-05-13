@@ -13,8 +13,8 @@ THUMB_IW = -mthumb-interwork
 BUILDDIR = build
 TARGET = $(BUILDDIR)/maple_boot
 
-ST_LIB = stm32_lib
-ST_USB = usb_lib
+ST_LIB = startup
+ST_USB = usb
 
 # Optimization level [0,1,2,3,s]
 OPT ?= s
