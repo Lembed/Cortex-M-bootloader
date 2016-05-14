@@ -52,8 +52,7 @@ static void Data_Setup0(void);
 *******************************************************************************/
 u8 *Standard_GetConfiguration(u16 Length)
 {
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength =
       sizeof(pInformation->Current_Configuration);
     return 0;
@@ -75,15 +74,12 @@ RESULT Standard_SetConfiguration(void)
 {
 
   if ((pInformation->USBwValue0 <=
-      Device_Table.Total_Configuration) && (pInformation->USBwValue1 == 0)
-      && (pInformation->USBwIndex == 0)) /*call Back usb spec 2.0*/
-  {
+       Device_Table.Total_Configuration) && (pInformation->USBwValue1 == 0)
+      && (pInformation->USBwIndex == 0)) { /*call Back usb spec 2.0*/
     pInformation->Current_Configuration = pInformation->USBwValue0;
     pUser_Standard_Requests->User_SetConfiguration();
     return USB_SUCCESS;
-  }
-  else
-  {
+  } else {
     return USB_UNSUPPORT;
   }
 }
@@ -98,8 +94,7 @@ RESULT Standard_SetConfiguration(void)
 *******************************************************************************/
 u8 *Standard_GetInterface(u16 Length)
 {
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength =
       sizeof(pInformation->Current_AlternateSetting);
     return 0;
@@ -124,15 +119,11 @@ RESULT Standard_SetInterface(void)
     the application Firmware*/
   Re = (*pProperty->Class_Get_Interface_Setting)(pInformation->USBwIndex0, pInformation->USBwValue0);
 
-  if (pInformation->Current_Configuration != 0)
-  {
+  if (pInformation->Current_Configuration != 0) {
     if ((Re != USB_SUCCESS) || (pInformation->USBwIndex1 != 0)
-        || (pInformation->USBwValue1 != 0))
-    {
+        || (pInformation->USBwValue1 != 0)) {
       return  USB_UNSUPPORT;
-    }
-    else if (Re == USB_SUCCESS)
-    {
+    } else if (Re == USB_SUCCESS) {
       pUser_Standard_Requests->User_SetInterface();
       pInformation->Current_Interface = pInformation->USBwIndex0;
       pInformation->Current_AlternateSetting = pInformation->USBwValue0;
@@ -154,8 +145,7 @@ RESULT Standard_SetInterface(void)
 *******************************************************************************/
 u8 *Standard_GetStatus(u16 Length)
 {
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength = 2;
     return 0;
   }
@@ -163,59 +153,45 @@ u8 *Standard_GetStatus(u16 Length)
   StatusInfo.w = 0;
   /* Reset Status Information */
 
-  if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT))
-  {
+  if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT)) {
     /*Get Device Status */
     u8 Feature = pInformation->Current_Feature;
 
     /* Remote Wakeup enabled */
-    if (ValBit(Feature, 5))
-    {
+    if (ValBit(Feature, 5)) {
       SetBit(StatusInfo0, 1);
     }
 
     /* Bus-powered */
-    if (ValBit(Feature, 6))
-    {
+    if (ValBit(Feature, 6)) {
       ClrBit(StatusInfo0, 0);
-    }
-    else /* Self-powered */
-    {
+    } else { /* Self-powered */
       SetBit(StatusInfo0, 0);
     }
   }
   /*Interface Status*/
-  else if (Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT))
-  {
+  else if (Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT)) {
     return (u8 *)&StatusInfo;
   }
   /*Get EndPoint Status*/
-  else if (Type_Recipient == (STANDARD_REQUEST | ENDPOINT_RECIPIENT))
-  {
+  else if (Type_Recipient == (STANDARD_REQUEST | ENDPOINT_RECIPIENT)) {
     u8 Related_Endpoint;
     u8 wIndex0 = pInformation->USBwIndex0;
 
     Related_Endpoint = (wIndex0 & 0x0f);
-    if (ValBit(wIndex0, 7))
-    {
+    if (ValBit(wIndex0, 7)) {
       /* IN endpoint */
-      if (_GetTxStallStatus(Related_Endpoint))
-      {
+      if (_GetTxStallStatus(Related_Endpoint)) {
         SetBit(StatusInfo0, 0); /* IN Endpoint stalled */
       }
-    }
-    else
-    {
+    } else {
       /* OUT endpoint */
-      if (_GetRxStallStatus(Related_Endpoint))
-      {
+      if (_GetRxStallStatus(Related_Endpoint)) {
         SetBit(StatusInfo0, 0); /* OUT Endpoint stalled */
       }
     }
 
-  }
-  else
-  {
+  } else {
     return NULL;
   }
   pUser_Standard_Requests->User_GetStatus();
@@ -236,21 +212,19 @@ RESULT Standard_ClearFeature(void)
   u32     Status;
 
 
-  if (Type_Rec == (STANDARD_REQUEST | DEVICE_RECIPIENT))
-  {/*Device Clear Feature*/
+  if (Type_Rec == (STANDARD_REQUEST | DEVICE_RECIPIENT)) {
+    /*Device Clear Feature*/
     ClrBit(pInformation->Current_Feature, 5);
     return USB_SUCCESS;
-  }
-  else if (Type_Rec == (STANDARD_REQUEST | ENDPOINT_RECIPIENT))
-  {/*EndPoint Clear Feature*/
+  } else if (Type_Rec == (STANDARD_REQUEST | ENDPOINT_RECIPIENT)) {
+    /*EndPoint Clear Feature*/
     DEVICE* pDev;
     u32 Related_Endpoint;
     u32 wIndex0;
     u32 rEP;
 
     if ((pInformation->USBwValue != ENDPOINT_STALL)
-        || (pInformation->USBwIndex1 != 0))
-    {
+        || (pInformation->USBwIndex1 != 0)) {
       return USB_UNSUPPORT;
     }
 
@@ -259,46 +233,34 @@ RESULT Standard_ClearFeature(void)
     rEP = wIndex0 & ~0x80;
     Related_Endpoint = ENDP0 + rEP;
 
-    if (ValBit(pInformation->USBwIndex0, 7))
-    {
+    if (ValBit(pInformation->USBwIndex0, 7)) {
       /*Get Status of endpoint & stall the request if the related_ENdpoint
       is Disabled*/
       Status = _GetEPTxStatus(Related_Endpoint);
-    }
-    else
-    {
+    } else {
       Status = _GetEPRxStatus(Related_Endpoint);
     }
 
     if ((rEP >= pDev->Total_Endpoint) || (Status == 0)
-        || (pInformation->Current_Configuration == 0))
-    {
+        || (pInformation->Current_Configuration == 0)) {
       return USB_UNSUPPORT;
     }
 
 
-    if (wIndex0 & 0x80)
-    {
+    if (wIndex0 & 0x80) {
       /* IN endpoint */
-      if (_GetTxStallStatus(Related_Endpoint ))
-      {
+      if (_GetTxStallStatus(Related_Endpoint )) {
         ClearDTOG_TX(Related_Endpoint);
         SetEPTxStatus(Related_Endpoint, EP_TX_VALID);
       }
-    }
-    else
-    {
+    } else {
       /* OUT endpoint */
-      if (_GetRxStallStatus(Related_Endpoint))
-      {
-        if (Related_Endpoint == ENDP0)
-        {
+      if (_GetRxStallStatus(Related_Endpoint)) {
+        if (Related_Endpoint == ENDP0) {
           /* After clear the STALL, enable the default endpoint receiver */
           SetEPRxCount(Related_Endpoint, Device_Property.MaxPacketSize);
           _SetEPRxStatus(Related_Endpoint, EP_RX_VALID);
-        }
-        else
-        {
+        } else {
           ClearDTOG_RX(Related_Endpoint);
           _SetEPRxStatus(Related_Endpoint, EP_RX_VALID);
         }
@@ -330,33 +292,25 @@ RESULT Standard_SetEndPointFeature(void)
   rEP = wIndex0 & ~0x80;
   Related_Endpoint = ENDP0 + rEP;
 
-  if (ValBit(pInformation->USBwIndex0, 7))
-  {
+  if (ValBit(pInformation->USBwIndex0, 7)) {
     /* get Status of endpoint & stall the request if the related_ENdpoint
     is Disabled*/
     Status = _GetEPTxStatus(Related_Endpoint);
-  }
-  else
-  {
+  } else {
     Status = _GetEPRxStatus(Related_Endpoint);
   }
 
   if (Related_Endpoint >= Device_Table.Total_Endpoint
       || pInformation->USBwValue != 0 || Status == 0
-      || pInformation->Current_Configuration == 0)
-  {
+      || pInformation->Current_Configuration == 0) {
     return USB_UNSUPPORT;
-  }
-  else
-  {
-    if (wIndex0 & 0x80)
-    {
+  } else {
+    if (wIndex0 & 0x80) {
       /* IN endpoint */
       _SetEPTxStatus(Related_Endpoint, EP_TX_STALL);
     }
 
-    else
-    {
+    else {
       /* OUT endpoint */
       _SetEPRxStatus(Related_Endpoint, EP_RX_STALL);
     }
@@ -404,8 +358,7 @@ u8 *Standard_GetDescriptorData(u16 Length, ONE_DESCRIPTOR *pDesc)
   u32  wOffset;
 
   wOffset = pInformation->Ctrl_Info.Usb_wOffset;
-  if (Length == 0)
-  {
+  if (Length == 0) {
     pInformation->Ctrl_Info.Usb_wLength = pDesc->Descriptor_Size - wOffset;
     return 0;
   }
@@ -427,14 +380,12 @@ void DataStageOut(void)
 
   save_rLength = pEPinfo->Usb_rLength;
 
-  if (pEPinfo->CopyData && save_rLength)
-  {
+  if (pEPinfo->CopyData && save_rLength) {
     u8 *Buffer;
     u32 Length;
 
     Length = pEPinfo->PacketSize;
-    if (Length > save_rLength)
-    {
+    if (Length > save_rLength) {
       Length = save_rLength;
     }
 
@@ -445,25 +396,18 @@ void DataStageOut(void)
     PMAToUserBufferCopy(Buffer, GetEPRxAddr(ENDP0), Length);
   }
 
-  if (pEPinfo->Usb_rLength != 0)
-  {
+  if (pEPinfo->Usb_rLength != 0) {
     vSetEPRxStatus(EP_RX_VALID);/* re-enable for next data reception */
     SetEPTxCount(ENDP0, 0);
     vSetEPTxStatus(EP_TX_VALID);/* Expect the host to abort the data OUT stage */
   }
   /* Set the next State*/
-  if (pEPinfo->Usb_rLength >= pEPinfo->PacketSize)
-  {
+  if (pEPinfo->Usb_rLength >= pEPinfo->PacketSize) {
     pInformation->ControlState = OUT_DATA;
-  }
-  else
-  {
-    if (pEPinfo->Usb_rLength > 0)
-    {
+  } else {
+    if (pEPinfo->Usb_rLength > 0) {
       pInformation->ControlState = LAST_OUT_DATA;
-    }
-    else if (pEPinfo->Usb_rLength == 0)
-    {
+    } else if (pEPinfo->Usb_rLength == 0) {
       pInformation->ControlState = WAIT_STATUS_IN;
       USB_StatusIn();
     }
@@ -486,17 +430,13 @@ void DataStageIn(void)
   u8 *DataBuffer;
   u32 Length;
 
-  if ((save_wLength == 0) && (ControlState == LAST_IN_DATA))
-  {
-    if(Data_Mul_MaxPacketSize == TRUE)
-    {
+  if ((save_wLength == 0) && (ControlState == LAST_IN_DATA)) {
+    if (Data_Mul_MaxPacketSize == TRUE) {
       /* No more data to send and empty packet */
       Send0LengthData();
       ControlState = LAST_IN_DATA;
       Data_Mul_MaxPacketSize = FALSE;
-    }
-    else
-    {
+    } else {
       /* No more data to send so STALL the TX Status*/
       ControlState = WAIT_STATUS_OUT;
       vSetEPTxStatus(EP_TX_STALL);
@@ -508,8 +448,7 @@ void DataStageIn(void)
   Length = pEPinfo->PacketSize;
   ControlState = (save_wLength <= Length) ? LAST_IN_DATA : IN_DATA;
 
-  if (Length > save_wLength)
-  {
+  if (Length > save_wLength) {
     Length = save_wLength;
   }
 
@@ -542,18 +481,15 @@ void NoData_Setup0(void)
   u32 RequestNo = pInformation->USBbRequest;
   u32 ControlState;
 
-  if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT))
-  {
+  if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT)) {
     /* Device Request*/
     /* SET_CONFIGURATION*/
-    if (RequestNo == SET_CONFIGURATION)
-    {
+    if (RequestNo == SET_CONFIGURATION) {
       Result = Standard_SetConfiguration();
     }
 
     /*SET ADDRESS*/
-    else if (RequestNo == SET_ADDRESS)
-    {
+    else if (RequestNo == SET_ADDRESS) {
       if ((pInformation->USBwValue0 > 127) || (pInformation->USBwValue1 != 0)
           || (pInformation->USBwIndex != 0)
           || (pInformation->Current_Configuration != 0))
@@ -561,37 +497,27 @@ void NoData_Setup0(void)
       {
         ControlState = STALLED;
         goto exit_NoData_Setup0;
-      }
-      else
-      {
+      } else {
         Result = USB_SUCCESS;
       }
     }
     /*SET FEATURE for Device*/
-    else if (RequestNo == SET_FEATURE)
-    {
+    else if (RequestNo == SET_FEATURE) {
       if ((pInformation->USBwValue0 == DEVICE_REMOTE_WAKEUP)
           && (pInformation->USBwIndex == 0)
-          && (ValBit(pInformation->Current_Feature, 5)))
-      {
+          && (ValBit(pInformation->Current_Feature, 5))) {
         Result = Standard_SetDeviceFeature();
-      }
-      else
-      {
+      } else {
         Result = USB_UNSUPPORT;
       }
     }
     /*Clear FEATURE for Device */
-    else if (RequestNo == CLEAR_FEATURE)
-    {
+    else if (RequestNo == CLEAR_FEATURE) {
       if (pInformation->USBwValue0 == DEVICE_REMOTE_WAKEUP
           && pInformation->USBwIndex == 0
-          && ValBit(pInformation->Current_Feature, 5))
-      {
+          && ValBit(pInformation->Current_Feature, 5)) {
         Result = Standard_ClearFeature();
-      }
-      else
-      {
+      } else {
         Result = USB_UNSUPPORT;
       }
     }
@@ -599,47 +525,37 @@ void NoData_Setup0(void)
   }
 
   /* Interface Request*/
-  else if (Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT))
-  {
+  else if (Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT)) {
     /*SET INTERFACE*/
-    if (RequestNo == SET_INTERFACE)
-    {
+    if (RequestNo == SET_INTERFACE) {
       Result = Standard_SetInterface();
     }
   }
 
   /* EndPoint Request*/
-  else if (Type_Recipient == (STANDARD_REQUEST | ENDPOINT_RECIPIENT))
-  {
+  else if (Type_Recipient == (STANDARD_REQUEST | ENDPOINT_RECIPIENT)) {
     /*CLEAR FEATURE for EndPoint*/
-    if (RequestNo == CLEAR_FEATURE)
-    {
+    if (RequestNo == CLEAR_FEATURE) {
       Result = Standard_ClearFeature();
     }
     /* SET FEATURE for EndPoint*/
-    else if (RequestNo == SET_FEATURE)
-    {
+    else if (RequestNo == SET_FEATURE) {
       Result = Standard_SetEndPointFeature();
     }
-  }
-  else
-  {
+  } else {
     Result = USB_UNSUPPORT;
   }
 
 
-  if (Result != USB_SUCCESS)
-  {
+  if (Result != USB_SUCCESS) {
     Result = (*pProperty->Class_NoData_Setup)(RequestNo);
-    if (Result == USB_NOT_READY)
-    {
+    if (Result == USB_NOT_READY) {
       ControlState = PAUSE;
       goto exit_NoData_Setup0;
     }
   }
 
-  if (Result != USB_SUCCESS)
-  {
+  if (Result != USB_SUCCESS) {
     ControlState = STALLED;
     goto exit_NoData_Setup0;
   }
@@ -674,25 +590,17 @@ void Data_Setup0(void)
   CopyRoutine = NULL;
   wOffset = 0;
 
-  if (Request_No == GET_DESCRIPTOR)
-  {
-    if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT))
-    {
+  if (Request_No == GET_DESCRIPTOR) {
+    if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT)) {
       u8 wValue1 = pInformation->USBwValue1;
-      if (wValue1 == DEVICE_DESCRIPTOR)
-      {
+      if (wValue1 == DEVICE_DESCRIPTOR) {
         CopyRoutine = pProperty->GetDeviceDescriptor;
-      }
-      else if (wValue1 == CONFIG_DESCRIPTOR)
-      {
+      } else if (wValue1 == CONFIG_DESCRIPTOR) {
         CopyRoutine = pProperty->GetConfigDescriptor;
-      }
-      else if (wValue1 == STRING_DESCRIPTOR)
-      {
+      } else if (wValue1 == STRING_DESCRIPTOR) {
         CopyRoutine = pProperty->GetStringDescriptor;
-      } else if (wValue1 == 0x21) /* added to support functional descriptors */
-      {
-	CopyRoutine = pProperty->GetFunctionalDescriptor;
+      } else if (wValue1 == 0x21) { /* added to support functional descriptors */
+        CopyRoutine = pProperty->GetFunctionalDescriptor;
       } /* End of GET_DESCRIPTOR */
     }
   }
@@ -700,45 +608,36 @@ void Data_Setup0(void)
   /*GET STATUS*/
   else if ((Request_No == GET_STATUS) && (pInformation->USBwValue == 0)
            && (pInformation->USBwLength == 0x0002)
-           && (pInformation->USBwIndex1 == 0))
-  {
+           && (pInformation->USBwIndex1 == 0)) {
     /* GET STATUS for Device*/
     if ((Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT))
-        && (pInformation->USBwIndex == 0))
-    {
+        && (pInformation->USBwIndex == 0)) {
       CopyRoutine = Standard_GetStatus;
     }
 
     /* GET STATUS for Interface*/
-    else if (Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT))
-    {
+    else if (Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT)) {
       if (((*pProperty->Class_Get_Interface_Setting)(pInformation->USBwIndex0, 0) == USB_SUCCESS)
-          && (pInformation->Current_Configuration != 0))
-      {
+          && (pInformation->Current_Configuration != 0)) {
         CopyRoutine = Standard_GetStatus;
       }
     }
 
     /* GET STATUS for EndPoint*/
-    else if (Type_Recipient == (STANDARD_REQUEST | ENDPOINT_RECIPIENT))
-    {
+    else if (Type_Recipient == (STANDARD_REQUEST | ENDPOINT_RECIPIENT)) {
       Related_Endpoint = (pInformation->USBwIndex0 & 0x0f);
       Reserved = pInformation->USBwIndex0 & 0x70;
 
-      if (ValBit(pInformation->USBwIndex0, 7))
-      {
+      if (ValBit(pInformation->USBwIndex0, 7)) {
         /*Get Status of endpoint & stall the request if the related_ENdpoint
         is Disabled*/
         Status = _GetEPTxStatus(Related_Endpoint);
-      }
-      else
-      {
+      } else {
         Status = _GetEPRxStatus(Related_Endpoint);
       }
 
       if ((Related_Endpoint < Device_Table.Total_Endpoint) && (Reserved == 0)
-          && (Status != 0))
-      {
+          && (Status != 0)) {
         CopyRoutine = Standard_GetStatus;
       }
     }
@@ -746,87 +645,69 @@ void Data_Setup0(void)
   }
 
   /*GET CONFIGURATION*/
-  else if (Request_No == GET_CONFIGURATION)
-  {
-    if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT))
-    {
+  else if (Request_No == GET_CONFIGURATION) {
+    if (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT)) {
       CopyRoutine = Standard_GetConfiguration;
     }
   }
   /*GET INTERFACE*/
-  else if (Request_No == GET_INTERFACE)
-  {
+  else if (Request_No == GET_INTERFACE) {
     if ((Type_Recipient == (STANDARD_REQUEST | INTERFACE_RECIPIENT))
         && (pInformation->Current_Configuration != 0) && (pInformation->USBwValue == 0)
         && (pInformation->USBwIndex1 == 0) && (pInformation->USBwLength == 0x0001)
-        && ((*pProperty->Class_Get_Interface_Setting)(pInformation->USBwIndex0, 0) == USB_SUCCESS))
-    {
+        && ((*pProperty->Class_Get_Interface_Setting)(pInformation->USBwIndex0, 0) == USB_SUCCESS)) {
       CopyRoutine = Standard_GetInterface;
     }
 
   }
 
-  if (CopyRoutine)
-  {
+  if (CopyRoutine) {
     pInformation->Ctrl_Info.Usb_wOffset = wOffset;
     pInformation->Ctrl_Info.CopyData = CopyRoutine;
     /* sb in the original the cast to word was directly */
     /* now the cast is made step by step */
     (*CopyRoutine)(0);
     Result = USB_SUCCESS;
-  }
-  else
-  {
+  } else {
     Result = (*pProperty->Class_Data_Setup)(pInformation->USBbRequest);
-    if (Result == USB_NOT_READY)
-    {
+    if (Result == USB_NOT_READY) {
       pInformation->ControlState = PAUSE;
       return;
     }
   }
 
-  if (pInformation->Ctrl_Info.Usb_wLength == 0xFFFF)
-  {
+  if (pInformation->Ctrl_Info.Usb_wLength == 0xFFFF) {
     /* Data is not ready, wait it */
     pInformation->ControlState = PAUSE;
     return;
   }
-  if ((Result == USB_UNSUPPORT) || (pInformation->Ctrl_Info.Usb_wLength == 0))
-  {
+  if ((Result == USB_UNSUPPORT) || (pInformation->Ctrl_Info.Usb_wLength == 0)) {
     /* Unsupported request */
     pInformation->ControlState = STALLED;
     return;
   }
 
 
-  if (ValBit(pInformation->USBbmRequestType, 7))
-  {
+  if (ValBit(pInformation->USBbmRequestType, 7)) {
     /* Device ==> Host */
     vu32 wLength = pInformation->USBwLength;
 
     /* Restrict the data length to be the one host asks */
-    if (pInformation->Ctrl_Info.Usb_wLength > wLength)
-    {
+    if (pInformation->Ctrl_Info.Usb_wLength > wLength) {
       pInformation->Ctrl_Info.Usb_wLength = wLength;
     }
 
-    else if (pInformation->Ctrl_Info.Usb_wLength < pInformation->USBwLength)
-    {
-      if (pInformation->Ctrl_Info.Usb_wLength < pProperty->MaxPacketSize)
-      {
+    else if (pInformation->Ctrl_Info.Usb_wLength < pInformation->USBwLength) {
+      if (pInformation->Ctrl_Info.Usb_wLength < pProperty->MaxPacketSize) {
         Data_Mul_MaxPacketSize = FALSE;
-      }
-      else if ((pInformation->Ctrl_Info.Usb_wLength % pProperty->MaxPacketSize) == 0)
-      {
+      } else if ((pInformation->Ctrl_Info.Usb_wLength % pProperty->MaxPacketSize) == 0) {
         Data_Mul_MaxPacketSize = TRUE;
       }
     }
 
     pInformation->Ctrl_Info.PacketSize = pProperty->MaxPacketSize;
     DataStageIn();
-  }
-  else
-  {
+  } else {
     pInformation->ControlState = OUT_DATA;
     vSetEPRxStatus(EP_RX_VALID); /* enable for next data reception */
   }
@@ -844,16 +725,14 @@ void Data_Setup0(void)
 u8 Setup0_Process(void)
 {
 
-  union
-  {
+  union {
     u8* b;
     u16* w;
   } pBuf;
 
   pBuf.b = PMAAddr + (u8 *)(_GetEPRxAddr(ENDP0) * 2); /* *2 for 32 bits addr */
 
-  if (pInformation->ControlState != PAUSE)
-  {
+  if (pInformation->ControlState != PAUSE) {
     pInformation->USBbmRequestType = *pBuf.b++; /* bmRequestType */
     pInformation->USBbRequest = *pBuf.b++; /* bRequest */
     pBuf.w++;  /* word not accessed because of 32 bits addressing */
@@ -865,13 +744,10 @@ u8 Setup0_Process(void)
   }
 
   pInformation->ControlState = SETTING_UP;
-  if (pInformation->USBwLength == 0)
-  {
+  if (pInformation->USBwLength == 0) {
     /* Setup with no data stage */
     NoData_Setup0();
-  }
-  else
-  {
+  } else {
     /* Setup with data stage */
     Data_Setup0();
   }
@@ -889,18 +765,15 @@ u8 In0_Process(void)
 {
   u32 ControlState = pInformation->ControlState;
 
-  if ((ControlState == IN_DATA) || (ControlState == LAST_IN_DATA))
-  {
+  if ((ControlState == IN_DATA) || (ControlState == LAST_IN_DATA)) {
     DataStageIn();
     /* ControlState may be changed outside the function */
     ControlState = pInformation->ControlState;
   }
 
-  else if (ControlState == WAIT_STATUS_IN)
-  {
+  else if (ControlState == WAIT_STATUS_IN) {
     if ((pInformation->USBbRequest == SET_ADDRESS) &&
-        (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT)))
-    {
+        (Type_Recipient == (STANDARD_REQUEST | DEVICE_RECIPIENT))) {
       SetDeviceAddress(pInformation->USBwValue0);
       pUser_Standard_Requests->User_SetDeviceAddress();
     }
@@ -908,8 +781,7 @@ u8 In0_Process(void)
     ControlState = STALLED;
   }
 
-  else
-  {
+  else {
     ControlState = STALLED;
   }
 
@@ -929,27 +801,23 @@ u8 Out0_Process(void)
 {
   u32 ControlState = pInformation->ControlState;
 
-  if ((ControlState == OUT_DATA) || (ControlState == LAST_OUT_DATA))
-  {
+  if ((ControlState == OUT_DATA) || (ControlState == LAST_OUT_DATA)) {
     DataStageOut();
     ControlState = pInformation->ControlState; /* may be changed outside the function */
   }
 
-  else if (ControlState == WAIT_STATUS_OUT)
-  {
+  else if (ControlState == WAIT_STATUS_OUT) {
     (*pProperty->Process_Status_OUT)();
     ControlState = STALLED;
   }
 
-  else if ((ControlState == IN_DATA) || (ControlState == LAST_IN_DATA))
-  {
+  else if ((ControlState == IN_DATA) || (ControlState == LAST_IN_DATA)) {
     /* host aborts the transfer before finish */
     ControlState = STALLED;
   }
 
   /* Unexpect state, STALL the endpoint */
-  else
-  {
+  else {
     ControlState = STALLED;
   }
 
@@ -970,8 +838,7 @@ u8 Post0_Process(void)
 {
   SetEPRxCount(ENDP0, Device_Property.MaxPacketSize);
 
-  if (pInformation->ControlState == STALLED)
-  {
+  if (pInformation->ControlState == STALLED) {
     vSetEPRxStatus(EP_RX_STALL);
     vSetEPTxStatus(EP_TX_STALL);
   }
@@ -992,8 +859,7 @@ void SetDeviceAddress(u8 Val)
   u32 nEP = Device_Table.Total_Endpoint;
 
   /* set address in every used endpoint */
-  for (i = 0; i < nEP; i++)
-  {
+  for (i = 0; i < nEP; i++) {
     _SetEPAddress((u8)i, (u8)i);
   } /* for */
   _SetDADDR(Val | DADDR_EF); /* set device address and enable function */

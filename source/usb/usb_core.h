@@ -19,8 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
-typedef enum _CONTROL_STATE
-{
+typedef enum _CONTROL_STATE {
   WAIT_SETUP,       /* 0 */
   SETTING_UP,       /* 1 */
   IN_DATA,          /* 2 */
@@ -33,17 +32,14 @@ typedef enum _CONTROL_STATE
   PAUSE             /* 10 */
 } CONTROL_STATE;    /* The state machine states of a control pipe */
 
-typedef struct OneDescriptor
-{
+typedef struct OneDescriptor {
   u8 *Descriptor;
   u16 Descriptor_Size;
-}
-ONE_DESCRIPTOR, *PONE_DESCRIPTOR;
+} ONE_DESCRIPTOR, *PONE_DESCRIPTOR;
 /* All the request process routines return a value of this type
    If the return value is not SUCCESS or NOT_READY,
    the software will STALL the correspond endpoint */
-typedef enum _RESULT
-{
+typedef enum _RESULT {
   USB_SUCCESS = 0,    /* Process sucessfully */
   USB_ERROR,
   USB_UNSUPPORT,
@@ -53,8 +49,7 @@ typedef enum _RESULT
 
 
 /*-*-*-*-*-*-*-*-*-*-* Definitions for endpoint level -*-*-*-*-*-*-*-*-*-*-*-*/
-typedef struct _ENDPOINT_INFO
-{
+typedef struct _ENDPOINT_INFO {
   /* When send data out of the device,
    CopyData() is used to get data buffer 'Length' bytes data
    if Length is 0,
@@ -81,31 +76,25 @@ typedef struct _ENDPOINT_INFO
   u16  Usb_wOffset;
   u16  PacketSize;
   u8   *(*CopyData)(u16 Length);
-}ENDPOINT_INFO;
+} ENDPOINT_INFO;
 
 /*-*-*-*-*-*-*-*-*-*-*-* Definitions for device level -*-*-*-*-*-*-*-*-*-*-*-*/
 
-typedef struct _DEVICE
-{
+typedef struct _DEVICE {
   u8 Total_Endpoint;     /* Number of endpoints that are used */
   u8 Total_Configuration;/* Number of configuration available */
-}
-DEVICE;
+} DEVICE;
 
-typedef union
-{
+typedef union {
   u16 w;
-  struct BW
-  {
+  struct BW {
     /* Little Endian */
     u8 bb0;
     u8 bb1;
-  }
-  bw;
+  } bw;
 } u16_u8;
 
-typedef struct _DEVICE_INFO
-{
+typedef struct _DEVICE_INFO {
   u8 USBbmRequestType;       /* bmRequestType */
   u8 USBbRequest;            /* bRequest */
   u16_u8 USBwValues;         /* wValue */
@@ -120,10 +109,9 @@ typedef struct _DEVICE_INFO
                                      interface*/
 
   ENDPOINT_INFO Ctrl_Info;
-}DEVICE_INFO;
+} DEVICE_INFO;
 
-typedef struct _DEVICE_PROP
-{
+typedef struct _DEVICE_PROP {
   void (*Init)(void);        /* Initialize the device */
   void (*Reset)(void);       /* Reset routine of this device */
 
@@ -178,10 +166,9 @@ typedef struct _DEVICE_PROP
   u8* RxEP_buffer;
   u8 MaxPacketSize;
 
-}DEVICE_PROP;
+} DEVICE_PROP;
 
-typedef struct _USER_STANDARD_REQUESTS
-{
+typedef struct _USER_STANDARD_REQUESTS {
   void (*User_GetConfiguration)(void);       /* Get Configuration */
   void (*User_SetConfiguration)(void);       /* Set Configuration */
   void (*User_GetInterface)(void);           /* Get Interface */
@@ -191,8 +178,7 @@ typedef struct _USER_STANDARD_REQUESTS
   void (*User_SetEndPointFeature)(void);     /* Set Endpoint Feature */
   void (*User_SetDeviceFeature)(void);       /* Set Device Feature */
   void (*User_SetDeviceAddress)(void);       /* Set Device Address */
-}
-USER_STANDARD_REQUESTS;
+} USER_STANDARD_REQUESTS;
 
 /* Exported constants --------------------------------------------------------*/
 #define Type_Recipient (pInformation->USBbmRequestType & (REQUEST_TYPE | RECIPIENT))

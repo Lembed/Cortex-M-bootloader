@@ -31,53 +31,45 @@
  *
  */
 
-#include "common.h"
-#include "dfu.h"
+#include "include.h"
+
 extern volatile dfuUploadTypes_t userUploadType;
 
-int main() 
+int main()
 {
-    systemReset(); // peripherals but not PC
-    setupCLK();
-    setupLEDAndButton();
-    setupUSB();
-    setupFLASH();
-	
+	systemReset(); // peripherals but not PC
+	setupCLK();
+	setupLEDAndButton();
+	setupUSB();
+	setupFLASH();
 
-	strobePin(LED_BANK, LED_PIN, STARTUP_BLINKS, BLINK_FAST,LED_ON_STATE);
+
+	strobePin(LED_BANK, LED_PIN, STARTUP_BLINKS, BLINK_FAST, LED_ON_STATE);
 
 
 	/* wait for host to upload program or halt bootloader */
 	bool no_user_jump = (!checkUserCode(USER_CODE_FLASH0X8005000) && !checkUserCode(USER_CODE_FLASH0X8002000)) || readButtonState() ;
-	
 	int delay_count = 0;
 
-    while ((delay_count++ < BOOTLOADER_WAIT) || no_user_jump)
-	{
+	while ((delay_count++ < BOOTLOADER_WAIT) || no_user_jump) {
 
-        strobePin(LED_BANK, LED_PIN, 1, BLINK_SLOW,LED_ON_STATE);
+		strobePin(LED_BANK, LED_PIN, 1, BLINK_SLOW, LED_ON_STATE);
 
-        if (dfuUploadStarted()) 
-		{
-            dfuFinishUpload(); // systemHardReset from DFU once done
-        }
-    }
+		if (dfuUploadStarted()) {
+			// systemHardReset from DFU once done
+			dfuFinishUpload();
+		}
+	}
 
 
-	if (checkUserCode(USER_CODE_FLASH0X8002000)) 
-	{
+	if (checkUserCode(USER_CODE_FLASH0X8002000)) {
 		jumpToUser(USER_CODE_FLASH0X8002000);
-	} 
-	else 
-	{
-		if (checkUserCode(USER_CODE_FLASH0X8005000))
-		{
+	} else {
+		if (checkUserCode(USER_CODE_FLASH0X8005000)) {
 			jumpToUser(USER_CODE_FLASH0X8005000);
-		} 
-		else
-		{
+		} else {
 			// Nothing to execute in either Flash or RAM
-			strobePin(LED_BANK, LED_PIN, 5, BLINK_FAST,LED_ON_STATE);
+			strobePin(LED_BANK, LED_PIN, 5, BLINK_FAST, LED_ON_STATE);
 			systemHardReset();
 		}
 	}

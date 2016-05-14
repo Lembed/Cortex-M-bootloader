@@ -26,13 +26,11 @@
 #define __DFU_H
 
 #include "common.h"
-/*
-#define DFU_UPLOAD_NONE 0
-#define DFU_UPLOAD_RAM 1
-#define DFU_UPLOAD_FLASH_0X8005000 2
-#define DFU_UPLOAD_FLASH_0X8002000 3
-*/
-typedef enum {DFU_UPLOAD_NONE, DFU_UPLOAD_RAM, DFU_UPLOAD_FLASH_0X8005000,DFU_UPLOAD_FLASH_0X8002000} dfuUploadTypes_t;
+typedef enum {DFU_UPLOAD_NONE,
+              DFU_UPLOAD_RAM,
+              DFU_UPLOAD_FLASH_0X8005000,
+              DFU_UPLOAD_FLASH_0X8002000
+             } dfuUploadTypes_t;
 
 /* exposed types */
 typedef u8 *(*ClassReqCB)(u16);
@@ -43,7 +41,9 @@ typedef struct _DFUStatus {
     u8 bwPollTimeout0;
     u8 bwPollTimeout1;
     u8 bwPollTimeout2;
-    u8 bState;  /* state of device at the time the host receives the message! */
+
+    /* state of device at the time the host receives the message! */
+    u8 bState;
     u8 iString;
 } DFUStatus;
 
@@ -99,14 +99,16 @@ typedef enum _PLOT {
 /***********************************/
 
 
-
 extern volatile bool dfuBusy;
 
-/* exposed functions */
-void dfuInit(void);  /* singleton dfu initializer */
+/* exposed functions
+ * singleton dfu initializer
+ */
+void dfuInit(void);
 
 /* should consume dfuEvent type, but for now we can use pInfo (see comment above) */
-bool dfuUpdateByRequest(void);  /* returns if new status is OK */
+/* returns if new status is OK */
+bool dfuUpdateByRequest(void);
 void dfuUpdateByReset(void);
 void dfuUpdateByTimeout(void);
 

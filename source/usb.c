@@ -37,56 +37,58 @@
 extern u8 u8_usbConfigDescriptorDFU[];
 extern u8 u8_usbFunctionalDescriptor[];
 
-void setupUSB (void) {
+void setupUSB (void)
+{
 
-#ifdef HAS_MAPLE_HARDWARE	
-  /* Setup USB DISC pin as output open drain */	
-  SET_REG(GPIO_CR(USB_DISC_BANK,USB_DISC_PIN),(GET_REG(GPIO_CR(USB_DISC_BANK,USB_DISC_PIN)) & crMask(USB_DISC_PIN)) | CR_OUTPUT_OD << CR_SHITF(USB_DISC_PIN));  
-  gpio_write_bit(USB_DISC_BANK,USB_DISC_PIN,1);
+#ifdef HAS_MAPLE_HARDWARE
+    /* Setup USB DISC pin as output open drain */
+    SET_REG(GPIO_CR(USB_DISC_BANK, USB_DISC_PIN), (GET_REG(GPIO_CR(USB_DISC_BANK, USB_DISC_PIN)) & crMask(USB_DISC_PIN)) | CR_OUTPUT_OD << CR_SHITF(USB_DISC_PIN));
+    gpio_write_bit(USB_DISC_BANK, USB_DISC_PIN, 1);
 
-  /* turn on the USB clock */
-  //pRCC->APB1ENR |= RCC_APB1ENR_USB_CLK;// done in setupCLK()
+    /* turn on the USB clock */
+    //pRCC->APB1ENR |= RCC_APB1ENR_USB_CLK;// done in setupCLK()
 
-  gpio_write_bit(USB_DISC_BANK,USB_DISC_PIN,0);  /* present ourselves to the host */
+    gpio_write_bit(USB_DISC_BANK, USB_DISC_PIN, 0); /* present ourselves to the host */
 #else
 
-/* Generic boards don't have disconnect hardware, so we drive PA12 which is connected to the usb D+ line*/
+    /* Generic boards don't have disconnect hardware, so we drive PA12 which is connected to the usb D+ line*/
 #define USB_DISC_BANK         GPIOA
 #define USB_DISC_PIN              12
 
-  SET_REG(GPIO_CR(USB_DISC_BANK,USB_DISC_PIN),
-          (GET_REG(GPIO_CR(USB_DISC_BANK,USB_DISC_PIN)) & crMask(USB_DISC_PIN)) | CR_OUTPUT_PP << CR_SHITF(USB_DISC_PIN));
+    SET_REG(GPIO_CR(USB_DISC_BANK, USB_DISC_PIN),
+            (GET_REG(GPIO_CR(USB_DISC_BANK, USB_DISC_PIN)) & crMask(USB_DISC_PIN)) | CR_OUTPUT_PP << CR_SHITF(USB_DISC_PIN));
 
-  gpio_write_bit(USB_DISC_BANK,USB_DISC_PIN,0);  /* present ourselves to the host */
-  
-  volatile unsigned int delay;
-  for(delay = 0;delay<256;delay++);
+    gpio_write_bit(USB_DISC_BANK, USB_DISC_PIN, 0); /* present ourselves to the host */
 
-  //  volatile unsigned x = 1024; do { ; }while(--x);// wait a moment
-  /* turn on the USB clock */
-   SET_REG(GPIO_CR(USB_DISC_BANK,USB_DISC_PIN),
-          (GET_REG(GPIO_CR(USB_DISC_BANK,USB_DISC_PIN)) & crMask(USB_DISC_PIN)) | CR_INPUT << CR_SHITF(USB_DISC_PIN)); //Sets the PA12 as floating input
- //  pRCC->APB1ENR |= RCC_APB1ENR_USB_CLK;
-#endif  
-  /* initialize the usb application */
-  
-  wTransferSize=getFlashPageSize();
-  u8_usbConfigDescriptorDFU[41]=(wTransferSize & 0x00FF);
-  u8_usbConfigDescriptorDFU[42]=(wTransferSize & 0xFF00)>>8;
-  
-  u8_usbFunctionalDescriptor[5]=(wTransferSize & 0x00FF);
-  u8_usbFunctionalDescriptor[6]=(wTransferSize & 0xFF00)>>8;  
-  
-  usbAppInit();
+    volatile unsigned int delay;
+    for (delay = 0; delay < 256; delay++);
+
+    //  volatile unsigned x = 1024; do { ; }while(--x);// wait a moment
+    /* turn on the USB clock */
+    SET_REG(GPIO_CR(USB_DISC_BANK, USB_DISC_PIN),
+            (GET_REG(GPIO_CR(USB_DISC_BANK, USB_DISC_PIN)) & crMask(USB_DISC_PIN)) | CR_INPUT << CR_SHITF(USB_DISC_PIN)); //Sets the PA12 as floating input
+//  pRCC->APB1ENR |= RCC_APB1ENR_USB_CLK;
+#endif
+    /* initialize the usb application */
+
+    wTransferSize = getFlashPageSize();
+    u8_usbConfigDescriptorDFU[41] = (wTransferSize & 0x00FF);
+    u8_usbConfigDescriptorDFU[42] = (wTransferSize & 0xFF00) >> 8;
+
+    u8_usbFunctionalDescriptor[5] = (wTransferSize & 0x00FF);
+    u8_usbFunctionalDescriptor[6] = (wTransferSize & 0xFF00) >> 8;
+
+    usbAppInit();
 
 }
 
 
 
 
-void usbDsbBus(void) {
+void usbDsbBus(void)
+{
 // setPin(USB_DISC_BANK,USB_DISC_PIN);
-usbPowerOff();
+    usbPowerOff();
 // SET_REG(USB_DISC_CR,
 // (GET_REG(USB_DISC_CR) & USB_DISC_CR_MASK) | USB_DISC_CR_OUTPUT);
 // resetPin(USB_DISC_BANK, USB_DISC_PIN); /* Pull DP+ down */
@@ -160,17 +162,20 @@ struct {
 } ResumeS;
 
 /* dummy proc */
-void nothingProc(void) {
+void nothingProc(void)
+{
 }
 
 /* Function Definitions */
-void usbAppInit(void) {
+void usbAppInit(void)
+{
     /* hook in to usb_core, depends on all those damn
        non encapsulated externs! */
     USB_Init();
 }
 
-void usbSuspend(void) {
+void usbSuspend(void)
+{
     u16 wCNTR;
     wCNTR = _GetCNTR();
     wCNTR |= CNTR_FSUSP | CNTR_LPMODE;
@@ -180,7 +185,8 @@ void usbSuspend(void) {
     bDeviceState = SUSPENDED;
 }
 
-void usbResumeInit(void) {
+void usbResumeInit(void)
+{
     u16 wCNTR;
 
     /* restart any clocks that had been stopped */
@@ -194,7 +200,8 @@ void usbResumeInit(void) {
     _SetCNTR(ISR_MSK);
 }
 
-void usbResume(RESUME_STATE eResumeSetVal) {
+void usbResume(RESUME_STATE eResumeSetVal)
+{
     u16 wCNTR;
 
     if (eResumeSetVal != RESUME_ESOF)
@@ -242,7 +249,8 @@ void usbResume(RESUME_STATE eResumeSetVal) {
     }
 }
 
-RESULT usbPowerOn(void) {
+RESULT usbPowerOn(void)
+{
     u16 wRegVal;
 
     wRegVal = CNTR_FRES;
@@ -257,7 +265,8 @@ RESULT usbPowerOn(void) {
     return USB_SUCCESS;
 }
 
-RESULT usbPowerOff(void) {
+RESULT usbPowerOff(void)
+{
     _SetCNTR(CNTR_FRES);
     _SetISTR(0);
     _SetCNTR(CNTR_FRES + CNTR_PDWN);
@@ -270,7 +279,8 @@ RESULT usbPowerOff(void) {
     return USB_SUCCESS;
 }
 
-void usbInit(void) {
+void usbInit(void)
+{
     dfuInit();
 
     pInformation->Current_Configuration = 0;
@@ -280,11 +290,12 @@ void usbInit(void) {
     wInterrupt_Mask = ISR_MSK;
     _SetCNTR(wInterrupt_Mask);
 
-    usbEnbISR(); /* configure the cortex M3 private peripheral NVIC */
+    usbEnableISR(); /* configure the cortex M3 private peripheral NVIC */
     bDeviceState = UNCONNECTED;
 }
 
-void usbReset(void) {
+void usbReset(void)
+{
     dfuUpdateByReset();
 
     pInformation->Current_Configuration = 0;
@@ -309,13 +320,16 @@ void usbReset(void) {
     SetDeviceAddress(0); /* different than usbSetDeviceAddr! comes from usb_core */
 }
 
-void usbStatusIn(void) {
+void usbStatusIn(void)
+{
 }
 
-void usbStatusOut(void) {
+void usbStatusOut(void)
+{
 }
 
-RESULT usbDataSetup(u8 request) {
+RESULT usbDataSetup(u8 request)
+{
     u8 *(*CopyRoutine)(u16);
     CopyRoutine = NULL;
 
@@ -324,16 +338,16 @@ RESULT usbDataSetup(u8 request) {
         if (dfuUpdateByRequest()) {
             /* successfull state transition, handle the request */
             switch (request) {
-            case(DFU_GETSTATUS):
+            case (DFU_GETSTATUS):
                 CopyRoutine = dfuCopyStatus;
                 break;
-            case(DFU_GETSTATE):
+            case (DFU_GETSTATE):
                 CopyRoutine = dfuCopyState;
                 break;
-            case(DFU_DNLOAD):
+            case (DFU_DNLOAD):
                 CopyRoutine = dfuCopyDNLOAD;
                 break;
-            case(DFU_UPLOAD):
+            case (DFU_UPLOAD):
                 CopyRoutine = dfuCopyUPLOAD;
                 break;
             default:
@@ -354,7 +368,8 @@ RESULT usbDataSetup(u8 request) {
     return USB_UNSUPPORT;
 }
 
-RESULT usbNoDataSetup(u8 request) {
+RESULT usbNoDataSetup(u8 request)
+{
     if ((pInformation->USBbmRequestType & (REQUEST_TYPE | RECIPIENT)) == (CLASS_REQUEST | INTERFACE_RECIPIENT)) {
         /* todo, keep track of the destination interface, often stored in wIndex */
         if (dfuUpdateByRequest()) {
@@ -364,7 +379,8 @@ RESULT usbNoDataSetup(u8 request) {
     return USB_UNSUPPORT;
 }
 
-RESULT usbGetInterfaceSetting(u8 interface, u8 altSetting) {
+RESULT usbGetInterfaceSetting(u8 interface, u8 altSetting)
+{
     /* alt setting 0 -> program RAM, alt setting 1 -> FLASH */
     if (interface > NUM_ALT_SETTINGS) {
         return USB_UNSUPPORT;
@@ -373,15 +389,18 @@ RESULT usbGetInterfaceSetting(u8 interface, u8 altSetting) {
     }
 }
 
-u8 *usbGetDeviceDescriptor(u16 len) {
+u8 *usbGetDeviceDescriptor(u16 len)
+{
     return Standard_GetDescriptorData(len, &usbDeviceDescriptorDFU);
 }
 
-u8 *usbGetConfigDescriptor(u16 len) {
+u8 *usbGetConfigDescriptor(u16 len)
+{
     return Standard_GetDescriptorData(len, &usbConfigDescriptorDFU);
 }
 
-u8 *usbGetStringDescriptor(u16 len) {
+u8 *usbGetStringDescriptor(u16 len)
+{
     u8 strIndex = pInformation->USBwValue0;
     if (strIndex > STR_DESC_LEN) {
         return NULL;
@@ -390,7 +409,8 @@ u8 *usbGetStringDescriptor(u16 len) {
     }
 }
 
-u8 *usbGetFunctionalDescriptor(u16 len) {
+u8 *usbGetFunctionalDescriptor(u16 len)
+{
     return Standard_GetDescriptorData(len, &usbFunctionalDescriptor);
 }
 
@@ -403,47 +423,57 @@ u8 *usbGetFunctionalDescriptor(u16 len) {
  * application level
  *******************************************/
 
-void usbGetConfiguration(void) {
+void usbGetConfiguration(void)
+{
     /* nothing process */
 }
 
-void usbSetConfiguration(void) {
+void usbSetConfiguration(void)
+{
     if (pInformation->Current_Configuration != 0) {
         bDeviceState = CONFIGURED;
     }
 }
 
-void usbGetInterface(void) {
+void usbGetInterface(void)
+{
     /* nothing process */
 }
 
-void usbSetInterface(void) {
+void usbSetInterface(void)
+{
     /* nothing process */
 }
 
-void usbGetStatus(void) {
+void usbGetStatus(void)
+{
     /* nothing process */
 }
 
-void usbClearFeature(void) {
+void usbClearFeature(void)
+{
     /* nothing process */
 }
 
-void usbSetEndpointFeature(void) {
+void usbSetEndpointFeature(void)
+{
     /* nothing process */
 }
 
-void usbSetDeviceFeature(void) {
+void usbSetDeviceFeature(void)
+{
     /* nothing process */
 }
 
-void usbSetDeviceAddress(void) {
+void usbSetDeviceAddress(void)
+{
     bDeviceState = ADDRESSED;
 }
 /***** end of USER STANDARD REQUESTS *****/
 
 
-void usbEnbISR(void) {
+void usbEnableISR(void)
+{
     NVIC_InitTypeDef NVIC_InitStructure;
 
 
@@ -454,7 +484,8 @@ void usbEnbISR(void) {
     nvicInit(&NVIC_InitStructure);
 }
 
-void usbDsbISR(void) {
+void usbDsbISR(void)
+{
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = USB_LP_IRQ;
     NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -463,7 +494,8 @@ void usbDsbISR(void) {
     nvicInit(&NVIC_InitStructure);
 }
 
-void USB_LP_CAN1_RX0_IRQHandler(void) {
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
     wIstr = _GetISTR();
 
     /* go nuts with the preproc switches since this is an ISTR and must be FAST */
