@@ -1,4 +1,4 @@
-# STM32-bootloader
+# Cortex-m-bootloader in alpha
 
 ## Features
 
@@ -7,20 +7,21 @@
 3. build with gcc arm toolschain.
 4. led status indicater.
 5. low memory required.
+6. dfu support
 
 ## Build
 
 ```bash
-make generic-pe5
+make maplemini
 ```
 
 ## Note
-this is a fork of stm32duino-bootloader maintainer by rogerclarkmelbourne
+this is a fork of stm32duino-bootloader maintained by rogerclarkmelbourne
 
 ## More
-please visit [readme.txt](https://raw.githubusercontent.com/Lembed/Stm32-bootloader/master/readme.txt)
+please visit [readme.txt](https://raw.githubusercontent.com/Lembed/Cortex-M-bootloader/master/readme.txt)
 
 
 ## License
 
-[MIT](https://raw.githubusercontent.com/Lembed/Stm32-bootloader/master/LICENSE)
+[MIT](https://raw.githubusercontent.com/Lembed/Cortex-M-bootloader/master/LICENSE)
