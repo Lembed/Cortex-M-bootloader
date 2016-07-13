@@ -37,12 +37,10 @@ extern volatile dfuUploadTypes_t userUploadType;
 
 int main()
 {
-	systemReset(); // peripherals but not PC
-	setupCLK();
-	setupLEDAndButton();
-	setupUSB();
-	setupFLASH();
 
+	bspInit();
+
+	setupUSB();
 
 	strobePin(LED_BANK, LED_PIN, STARTUP_BLINKS, BLINK_FAST, LED_ON_STATE);
 
